@@ -11,7 +11,7 @@ public sealed class PostServices{
     private readonly IPostRepository _repository;
     private readonly IClock _clock;
     private readonly ISanitizer _sanitizer;
-    public PostServices(IPostRepository postRepository, ICl`ock clock, ISanitizer sanitizer){
+    public PostServices(IPostRepository postRepository, IClock clock, ISanitizer sanitizer){
         _sanitizer = sanitizer;
         _repository = postRepository;
         _clock = clock;
