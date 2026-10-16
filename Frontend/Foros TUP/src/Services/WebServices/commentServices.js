@@ -1,4 +1,4 @@
-import { API_URL, readJsonResponse } from "./PostServices";
+import { API_URL, readJsonResponse } from "./postServices";
 
 export const fetchComments = async (postId) => {
   const response = await fetch(`${API_URL}/posts/${postId}/comments`);

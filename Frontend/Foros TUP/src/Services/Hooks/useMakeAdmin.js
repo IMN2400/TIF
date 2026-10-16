@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { TOAST_SUCCESS } from "./postUtils";
-import { makeUserAdmin } from "./PostServices";
+import { TOAST_SUCCESS } from "../UtilityServices/postUtils";
+import { makeUserAdmin } from "../WebServices/postServices";
 
 export const useMakeAdmin = (token, onSuccess) => {
   const [targetUser, setTargetUser] = useState(null);

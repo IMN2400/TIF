@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { TOAST_SUCCESS } from "./postUtils";
+import { TOAST_SUCCESS } from "../UtilityServices/postUtils";
 import {
   fetchPost,
   fetchMyLike,
   likePost,
   updatePost,
   deletePost,
-} from "./PostServices";
+} from "../WebServices/postServices";
 
 export const usePost = (postId, token) => {
   const [post, setPost] = useState(null);

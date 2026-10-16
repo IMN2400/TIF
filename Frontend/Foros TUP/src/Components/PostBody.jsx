@@ -1,6 +1,6 @@
 import { Alert, Button, Form, Modal } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { formatBodyText } from "../../services/imgUtils/imgUtils";
+import { formatBodyText } from "../../Services/UtilityServices/imgUtils";
 import {
   formatDate,
   getInitial,

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { TOAST_SUCCESS } from "./postUtils";
+import { TOAST_SUCCESS } from "../UtilityServices/postUtils";
 import {
   fetchComments,
   createComment,
   updateComment,
   deleteComment,
-} from "./CommentServices";
+} from "../WebServices/commentServices";
 
 export const useComments = (postId, token) => {
   const [comments, setComments] = useState([]);

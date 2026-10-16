@@ -1,5 +1,5 @@
 import { Alert, Button, Form } from "react-bootstrap";
-import { formatBodyText } from "../../services/imgUtils/imgUtils";
+import { formatBodyText } from "../../services/UtilityServices/imgUtils";
 import {
   formatDate,
   getInitial,
