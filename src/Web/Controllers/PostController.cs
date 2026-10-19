@@ -48,7 +48,7 @@ public class PostController : ControllerBase
         return CreatedAtAction(nameof(NewPost), newPost);
     }
     
-    [HttpPatch("[id]")]
+    [HttpPatch("{id}")]
 
     public async Task<ActionResult> EditPost([FromRoute] Guid id, [FromBody] string newBody, CancellationToken ct)
     {
@@ -64,7 +64,7 @@ public class PostController : ControllerBase
 
     public async Task<ActionResult> DeletePost([FromRoute] Guid id, CancellationToken ct)
     {
-        await _services.Delete(id, ct);
+        await _services.Delete((PostId)id, ct);
         return NoContent();
     }
 }
