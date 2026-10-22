@@ -1,6 +1,8 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Form, Row, Col, Card, Spinner, Alert, Button } from "react-bootstrap";
-import { useFetchFromAPI } from "../Services/fetch/UseFetchFromAPI.jsx";
+import { useApiResource } from "../hooks/useApiResource.js";
+import { getForum, updateForum } from "../Services/forumService.js";
+import { getPostsByForum } from "../Services/postService.js";
 import { useRequireAuth } from "../Services/Hooks/useRequireAuth.js";
 import "./ForumPage.css";
 import { useState } from "react";
@@ -16,14 +18,11 @@ const ForumPage = () => {
   const navigate = useNavigate();
 
   // activación de los campos de edición
-  const {isAdmin, isSysAdmin, user, token} = useAuth()
+  const {isAdmin, isSysAdmin} = useAuth()
   const [editForumName, setEditForumName] = useState(false);
-  const [editForumRules, setEditForumRules] = useState(false);
   const [editForumDesc, setEditForumDesc] = useState(false);
-  const [editedRules, setEditedRules] = useState("");
   const [editedName, setEditedName] = useState("");
   const [editedDesc, setEditedDesc] = useState("");
-  const [editRulesError, setEditRulesError] = useState("");
   const [editNameError, setEditNameError] = useState("");
   const [editDescError, setEditDescError] = useState("");
   const [editLoading, setEditLoading] = useState(false)
@@ -37,34 +36,23 @@ const ForumPage = () => {
     loading: loadingForum,
     error: errorForum,
     refetch: fetchForums,
-  } = useFetchFromAPI(`/forums/${forumId}`, null);
+  } = useApiResource(getForum, forumId, null);
 
   // trae los posts del foro desde el backend
   const {
     data: posts,
     loading: loadingPosts,
     error: errorPosts,
-  } = useFetchFromAPI(`/forums/${forumId}/posts`, []);
+  } = useApiResource(getPostsByForum, forumId, []);
 
   // asegura que sea un array
   const forumPosts = Array.isArray(posts) ? posts : [];
   // arma la lista de reglas, si no tiene reglas usa reglas por defecto
-  const rules = forum?.rules
-    ? forum?.rules
-        .split(".")
-        .map((rule) => rule.trim())
-        .filter((rule) => rule.length > 0)
-    : [
-        "Respeta a los demás usuarios",
-        "No publicar spam",
-        "No contenido ofensivo",
-      ];
-
-  // calcula la cantidad de comentarios
-  const totalComments = forumPosts.reduce(
-    (total, post) => total + (post.Comments?.length || 0),
-    0
-  );
+  const rules = [
+    "Respeta a los demás usuarios",
+    "No publicar spam",
+    "No contenido ofensivo",
+  ];
 
   // maneja el "crear publicacion", si esta loggeado lo lleva al form
   const handleNewPost = () => {
@@ -77,30 +65,20 @@ const ForumPage = () => {
   };
 
   // un booleano que es True si el usuario puede editar el foro
-    const canEditForum =
-    isSysAdmin ||
-    (isAdmin && Number(user?.id) === Number(forum?.founderId));
+  const canEditForum = isSysAdmin || isAdmin;
      // funciones que abren o cierran los editores.
     const toggleEditForumName = () => {
       setEditedName(forum?.name || "")
       setEditForumDesc(false);
-      setEditForumRules(false)
       setEditForumName(!editForumName);}
-
-    const toggleEditForumRules = () => {
-      setEditedRules(forum?.rules || "")
-      setEditForumDesc(false);
-      setEditForumName(false);
-      setEditForumRules(!editForumRules);}
 
     const toggleEditForumDesc = () => {
       setEditedDesc(forum?.desc || "");
-      setEditForumRules(false);
       setEditForumName(false);
       setEditForumDesc(!editForumDesc);
     }
 
-  //Función que maneja el editor de reglas:
+  // Envía únicamente los campos que acepta el DTO de foros de .NET.
   const handleUpdateForum = async () => {
     
     if (!canEditForum) {
@@ -110,35 +88,18 @@ const ForumPage = () => {
 
     setEditLoading(true)
     setEditNameError("")
-    setEditRulesError("")
     setEditDescError("")
    try {
      let newForum = {
       name: forum?.name,
-      desc: forum?.desc,
-      rules: forum?.rules,
-      status: forum?.status
+      desc: forum?.desc
     }
 
     if (editedName !== "") newForum.name = editedName || "";
-    if (editedRules !== "") newForum.rules = editedRules || "";
     if (editedDesc !== "") newForum.desc = editedDesc || ""
-    const res = await fetch(`http://localhost:3000/forums/${forumId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization:`Bearer ${token}`
-      },
-      body: JSON.stringify(newForum)
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      throw new Error(
-        data.message || data.error || "No se pudo editar el post");};
-    setEditForumRules(false);
+    await updateForum(forumId, newForum);
     setEditForumName(false)
     setEditForumDesc(false)
-    setEditedRules("");
     setEditedName("");
     setEditLoading(false)
     fetchForums()
@@ -188,7 +149,7 @@ const ForumPage = () => {
 
         <div className="forum-detail-header">
           <div className="forum-detail-header-content">
-            {!!editForumName ? 
+            {editForumName ?
                   <Form>
                     <h6>Editar el nombre del foro</h6>
                     <Form.Group>
@@ -211,7 +172,7 @@ const ForumPage = () => {
                     onClick={toggleEditForumName}
                     >Editar</Button></h1>
                     }            
-            {!!editForumDesc ? 
+            {editForumDesc ?
                   <Form>
                     <h6>Editar la descripción del foro</h6>
                     <Form.Group>
@@ -277,7 +238,7 @@ const ForumPage = () => {
                       </div>
 
                       <div className="forum-detail-post-content">
-                        <h3>{post.title}</h3>
+                        <h3>{post.title || "Publicación"}</h3>
 
                         <p>{post.body}</p>
 
@@ -287,21 +248,7 @@ const ForumPage = () => {
                           </span>
 
                           <div className="forum-detail-post-stats">
-                            <span className="forum-detail-comments-count">
-                              comentarios {post.Comments?.length || 0}
-                            </span>
-
-                            <span className="forum-detail-like-count">
-                              <svg
-                                className="forum-detail-like-icon"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                              >
-                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                              </svg>
-
-                              {post.likeCount || 0}
-                            </span>
+                            <span>Sin estadísticas disponibles</span>
                           </div>
                         </div>
                       </div>
@@ -317,36 +264,12 @@ const ForumPage = () => {
               <Card className="forum-detail-side-card">
                 <Card.Body>
                   <Card.Title>Sobre este foro</Card.Title>
-                  {!!editForumRules ? 
-                  <Form>
-                    <h6>Editar reglas del foro</h6>
-                    <p style={{color:'red'}}>Recuerde separar las reglas con un punto (.).</p>
-                    <Form.Group>
-                      <Form.Control
-                        as="textarea"
-                        rows={4}
-                        value={editedRules}
-                        onChange={(event) => {
-                          setEditedRules(event.target.value);
-                          setEditRulesError("");
-                        }}
-                        isInvalid={!!editRulesError}/>
-                      </Form.Group>
-                    <Button variant="secondary" disabled={editLoading} onClick={toggleEditForumRules}>Cancelar</Button>
-                    &emsp;
-                    <Button variant="success" disabled={editLoading} onClick={handleUpdateForum}>Guardar</Button>
-                  </Form> : <div><h6>Reglas del foro</h6>
+                  <div><h6>Reglas generales</h6>
                   <ul className="forum-detail-rules">
                     {rules.map((rule, index) => (
                       <li key={index}>{rule}.</li>
                     ))}
-                  </ul></div>}
-                  <Button
-                    variant="outline-success"
-                    size="sm"
-                    hidden={!canEditForum || !!editForumRules}
-                    onClick={toggleEditForumRules}
-                    >Editar</Button>
+                  </ul></div>
                 </Card.Body>
                 
               </Card>
@@ -362,7 +285,7 @@ const ForumPage = () => {
 
                   <div className="forum-detail-stat">
                     <span>Comentarios:</span>
-                    <strong>{totalComments}</strong>
+                    <strong>Pendiente</strong>
                   </div>
 
                   <div className="forum-detail-stat">

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Form, Button, Alert, Card } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext.jsx";
+import { createForum } from "../Services/forumService.js";
 import "./NewForum.css";
 
 const NewForum = () => {
@@ -17,7 +18,7 @@ const NewForum = () => {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { token, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
 
   const handleChange = (event) => {
     setForm({
@@ -45,20 +46,7 @@ const NewForum = () => {
     try {
       setLoading(true);
 
-      const response = await fetch("http://localhost:3000/forums", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(form),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || data.error || "No se pudo crear el foro");
-      }
+      await createForum(form);
 
       setSuccess("Foro creado correctamente.");
 

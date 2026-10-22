@@ -10,9 +10,7 @@ import {
 
 const PostBody = ({
   postState,
-  commentCount,
   permissions,
-  user,
   requireAuth,
   navigate,
   onMakeAdminClick,
@@ -20,15 +18,10 @@ const PostBody = ({
 }) => {
   const {
     post,
-    likedByMe,
-    likeLoading,
-    toggleLike,
     editing,
-    editTitle,
     editBody,
     editError,
     savingEdit,
-    setEditTitle,
     setEditBody,
     setEditError,
     startEdit,
@@ -81,7 +74,7 @@ const PostBody = ({
         <span>›</span>
         {forumId ? <Link to={`/forum/${forumId}`}>{forumName}</Link> : <span>{forumName}</span>}
         <span>›</span>
-        <span>{post.title}</span>
+        <span>{post.title || "Publicación"}</span>
       </div>
 
       <article className="post-main-block">
@@ -130,17 +123,6 @@ const PostBody = ({
           <Form onSubmit={handleSaveEdit} noValidate>
             <Form.Group className="mb-3">
               <Form.Control
-                type="text"
-                value={editTitle}
-                onChange={(e) => {
-                  setEditTitle(e.target.value);
-                  setEditError("");
-                }}
-                isInvalid={!!editError}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Control
                 as="textarea"
                 rows={4}
                 value={editBody}
@@ -163,7 +145,7 @@ const PostBody = ({
           </Form>
         ) : (
           <>
-            <h1 className="post-main-title">{post.title}</h1>
+            <h1 className="post-main-title">{post.title || "Publicación"}</h1>
             <p
               className="post-main-description"
               dangerouslySetInnerHTML={{ __html: formatBodyText(post.body) }}
@@ -172,20 +154,9 @@ const PostBody = ({
         )}
 
         <div className="post-main-actions">
-          <button
-            type="button"
-            onClick={() => requireAuth(toggleLike)}
-            disabled={likeLoading}
-            className={`post-like-button ${likedByMe ? "post-like-active" : ""}`}
-            aria-label={likedByMe ? "Quitar me gusta" : "Dar me gusta"}
-          >
-            <svg className="post-like-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-            <span>{post.likeCount || 0}</span>
-          </button>
-
-          <span className="post-comments-count">{commentCount} comentarios</span>
+          <span className="post-comments-count">
+            Comentarios pendientes de integración
+          </span>
 
           {canEditPost(post) && !editing && (
             <Button

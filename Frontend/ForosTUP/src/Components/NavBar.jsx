@@ -9,24 +9,22 @@ import {
   Modal,
   ModalFooter,
   ButtonGroup,
-  DropdownMenu,
   DropdownHeader,
 } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./NavBar.css";
 import { useState } from "react";
+import { deleteUser } from "../Services/userService.js";
 
 const NavBar = () => {
   const navigate = useNavigate();
-
-  const API_URL = "http://localhost:3000";
 
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
   const [deleteAccountError, setDeleteAccountError] = useState("");
 
-  const { user, isAuthenticated, logout, isAdmin, isSysAdmin, token } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin, isSysAdmin } = useAuth();
 
   const userColor = isSysAdmin ? "warning" : (isAdmin ? "light" : "info");
 
@@ -50,24 +48,10 @@ const NavBar = () => {
     const idUserToRemove = user.id;
 
     try {
-      console.log(idUserToRemove);
-
-      const response = await fetch(`${API_URL}/persons/${idUserToRemove}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "No se pudo eliminar el usuario");
-      } else {
-        closeDeleteModal();
-        logout();
-        navigate("/register");
-      }
+      await deleteUser(idUserToRemove);
+      closeDeleteModal();
+      logout();
+      navigate("/register");
     } catch (err) {
       setDeleteAccountError(err);
     } finally {

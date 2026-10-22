@@ -2,15 +2,15 @@ import "./LogIn.css";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
+import { createUser } from "../Services/userService.js";
 
 const Register = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    nick: "",
-    nombre: "",
-    correo: "",
-    edad: "",
+    name: "",
+    email: "",
+    dateOfBirth: "",
     password: "",
     confirmPassword: "",
   });
@@ -40,30 +40,12 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nick: form.nick,
-          nombre: form.nombre,
-          correo: form.correo,
-          edad: Number(form.edad),
-          password: form.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error al registrar usuario");
-      }
+      await createUser(form);
 
       setSuccess("Usuario registrado correctamente");
 
       setTimeout(() => {
-        navigate("/login");
+        navigate("/foros");
       }, 1500);
 
     } catch (error) {
@@ -104,26 +86,12 @@ const Register = () => {
 
                 <Form onSubmit={handleSubmit}>
                   <Form.Group className="mb-3">
-                    <Form.Label className="login-label">Nick</Form.Label>
-                    <Form.Control
-                      className="login-input"
-                      type="text"
-                      name="nick"
-                      value={form.nick}
-                      onChange={handleChange}
-                      placeholder="Ej: Juan123"
-                      autoComplete="username"
-                      required
-                    />
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
                     <Form.Label className="login-label">Nombre</Form.Label>
                     <Form.Control
                       className="login-input"
                       type="text"
-                      name="nombre"
-                      value={form.nombre}
+                      name="name"
+                      value={form.name}
                       onChange={handleChange}
                       placeholder="Ingresá tu nombre"
                       autoComplete="name"
@@ -136,8 +104,8 @@ const Register = () => {
                     <Form.Control
                       className="login-input"
                       type="email"
-                      name="correo"
-                      value={form.correo}
+                      name="email"
+                      value={form.email}
                       onChange={handleChange}
                       placeholder="ejemplo@mail.com"
                       autoComplete="email"
@@ -146,15 +114,13 @@ const Register = () => {
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label className="login-label">Edad</Form.Label>
+                    <Form.Label className="login-label">Fecha de nacimiento</Form.Label>
                     <Form.Control
                       className="login-input"
-                      type="number"
-                      name="edad"
-                      min="13"
-                      value={form.edad}
+                      type="date"
+                      name="dateOfBirth"
+                      value={form.dateOfBirth}
                       onChange={handleChange}
-                      placeholder="13+"
                       required
                     />
                   </Form.Group>

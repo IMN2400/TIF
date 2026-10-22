@@ -5,7 +5,7 @@ export const createPermissions = ({ user, isAdmin, isSysAdmin }) => {
     if (!isAdmin) return false;
     if (!target?.id) return false;
     if (target.status === false) return false;
-    if (Number(target.id) === Number(user?.id)) return false;
+    if (String(target.id) === String(user?.id)) return false;
     if (!isSysAdmin && target?.role === "SYSADMIN") return false;
     return true;
   };
@@ -14,25 +14,21 @@ export const createPermissions = ({ user, isAdmin, isSysAdmin }) => {
     if (!isSysAdmin) return false;
     if (!target?.id) return false;
     if (isBannedUser(target)) return false;
-    if (Number(target.id) === Number(user?.id)) return false;
+    if (String(target.id) === String(user?.id)) return false;
     if (target.role && target.role !== "USER") return false;
     return true;
   };
 
   const canEditPost = (post) => {
     const authorId = post?.userId || post?.Person?.id;
-    return Number(authorId) === Number(user?.id);
+    return !!authorId && String(authorId) === String(user?.id);
   };
 
-  const canDeletePost = (post) => {
-    if (isSysAdmin) return true;
-    if (isAdmin && post?.Person?.role !== "SYSADMIN") return true;
-    return false;
-  };
+  const canDeletePost = () => false;
 
   const canEditComment = (comment) => {
     const authorId = comment?.userId || comment?.Person?.id;
-    return Number(authorId) === Number(user?.id);
+    return !!authorId && String(authorId) === String(user?.id);
   };
 
   const canDeleteComments = () => isAdmin || isSysAdmin;

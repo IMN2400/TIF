@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./forumDisplay.css";
 import { useState } from "react";
+import { deleteForum } from "../Services/forumService.js";
 
 //Recibe por prop un foro mapeado por forum(padre) y lo renderiza visualmente
 const ForumDisplay = ({ forum }) => {
   const navigate = useNavigate();
 
-  const { token, isSysAdmin, isAuthenticated } = useAuth();
+  const { isSysAdmin, isAuthenticated } = useAuth();
 
   const { id, name, desc, status } = forum;
 
@@ -16,10 +17,6 @@ const ForumDisplay = ({ forum }) => {
   const [deleteForumLoading, setDeleteForumLoading] = useState(false);
   const [deleteForumError, setDeleteForumError] = useState("");
   const [isForumVisible, setIsForumVisible] = useState(status);
-
-  const posts = Array.isArray(forum.Posts) ? forum.Posts : [];
-  const totalPosts = posts.length;
-  const postsLabel = totalPosts === 1 ? "post" : "posts";
 
   // al tocar el boton "ir al foro" arma una url con el id del foro clickeado y usa navigate para ir a esa ruta.
   const handleGoToForum = () => {
@@ -56,18 +53,7 @@ const ForumDisplay = ({ forum }) => {
       setDeleteForumLoading(true);
       setDeleteForumError("");
 
-      const response = await fetch(`http://localhost:3000/forums/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "No se pudo borrar el foro");
-      }
+      await deleteForum(id);
 
       setDeletionModal(false);
       setIsForumVisible(false);
@@ -95,9 +81,7 @@ const ForumDisplay = ({ forum }) => {
           </Card.Text>
 
           <div className="single-forum-card-stats">
-            <span>
-              {totalPosts} {postsLabel}
-            </span>
+            <span>Estado: {status ? "Activo" : "Inactivo"}</span>
           </div>
         </div>
 

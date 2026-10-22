@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Alert, Spinner, Form } from "react-bootstrap";
 import Forums from "./Forums.jsx";
-import { useFetchFromAPI } from "../Services/fetch/UseFetchFromAPI.jsx";
+import { useApiResource } from "../hooks/useApiResource.js";
+import { getForums } from "../Services/forumService.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import "./ForumListPage.css";
 
@@ -10,7 +11,11 @@ const ForumListPage = () => {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
-  const { data: forums, loading, error } = useFetchFromAPI("/forums", []);
+  const { data: forums, loading, error } = useApiResource(
+    getForums,
+    undefined,
+    []
+  );
   const [search, setSearch] = useState("");
 
   const filteredForums = (forums || []).filter((forum) => {
